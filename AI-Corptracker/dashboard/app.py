@@ -3,10 +3,11 @@ AI CorpTracker — CEO Dashboard
 
 Strategic goal monitoring dashboard with real-time risk visualization.
 """
+
 import streamlit as st
 
 # Настройка страницы (должна быть первой командой Streamlit)
-#st.set_page_config(page_title="AI CorpTracker", page_icon="🎯", layout="wide")
+# st.set_page_config(page_title="AI CorpTracker", page_icon="🎯", layout="wide")
 
 st.set_page_config(
     page_title="AI CorpTracker",
@@ -15,7 +16,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.markdown("""
+st.markdown(
+    """
 <style>
      /* Название приложения вверху боковой панели — поднято повыше */
     [data-testid="stSidebarNav"]::before {
@@ -76,19 +78,31 @@ st.markdown("""
     a[href*="streamlit.io"] { display: none !important; }
     div[data-testid="stToolbar"] { display: none !important; }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 overview_page = st.Page("pages/overview.py", title="Обзор", default=True)
 goals_page = st.Page("pages/goals.py", title="Цели")
 risks_page = st.Page("pages/risks.py", title="Риски")
-recommendations_page = st.Page("pages/recommendations.py", title="Рекомендации")  # оставляем
+recommendations_page = st.Page(
+    "pages/recommendations.py", title="Рекомендации"
+)  # оставляем
 search_page = st.Page("pages/search.py", title="Поиск")
 admin_page = st.Page("pages/admin.py", title="Управление")
 
 # Добавляем рекомендации в навигацию, но они будут скрыты CSS
-pg = st.navigation({
-    "Мониторинг": [overview_page, goals_page, risks_page, recommendations_page, search_page],
-    "Администрирование": [admin_page],
-})
+pg = st.navigation(
+    {
+        "Мониторинг": [
+            overview_page,
+            goals_page,
+            risks_page,
+            recommendations_page,
+            search_page,
+        ],
+        "Администрирование": [admin_page],
+    }
+)
 
 pg.run()

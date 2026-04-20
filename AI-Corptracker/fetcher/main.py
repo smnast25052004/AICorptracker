@@ -3,6 +3,7 @@ Fetcher Service — aggregates events from corporate systems and publishes to Ka
 
 Runs as a standalone microservice with periodic polling.
 """
+
 import time
 import structlog
 

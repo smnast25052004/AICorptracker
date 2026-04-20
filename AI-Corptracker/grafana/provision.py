@@ -15,6 +15,7 @@ Usage from external machine (through port forwarding):
 With custom PostgreSQL host:
     python grafana/provision.py --pg-host 192.168.31.179
 """
+
 import argparse
 import json
 import sys
@@ -73,7 +74,9 @@ class GrafanaProvisioner:
         body["secureJsonData"] = {"password": pg_pass}
         put = self.client.put(f"{self.base_url}/api/datasources/{ds_id}", json=body)
         if put.status_code in (200, 201):
-            print(f"[OK] Updated datasource jsonData.database -> {pg_db!r} (Grafana 12+)")
+            print(
+                f"[OK] Updated datasource jsonData.database -> {pg_db!r} (Grafana 12+)"
+            )
         elif put.status_code == 403 and "read-only" in (put.text or "").lower():
             print(
                 "[WARN] Datasource is provisioned as read-only — edit "
@@ -81,7 +84,9 @@ class GrafanaProvisioner:
                 "and restart the Grafana container / service."
             )
         else:
-            print(f"[WARN] Could not patch jsonData.database: {put.status_code} {put.text}")
+            print(
+                f"[WARN] Could not patch jsonData.database: {put.status_code} {put.text}"
+            )
 
     def create_datasource(
         self,
@@ -96,11 +101,15 @@ class GrafanaProvisioner:
         for ds in existing:
             if ds.get("name") == "CorpTracker PostgreSQL":
                 if force_recreate:
-                    resp = self.client.delete(f"{self.base_url}/api/datasources/uid/{ds.get('uid', ds['id'])}")
+                    resp = self.client.delete(
+                        f"{self.base_url}/api/datasources/uid/{ds.get('uid', ds['id'])}"
+                    )
                     if resp.status_code in (200, 404):
                         print(f"[OK] Old datasource removed, creating new one...")
                     else:
-                        print(f"[WARN] Could not remove old datasource: {resp.status_code}")
+                        print(
+                            f"[WARN] Could not remove old datasource: {resp.status_code}"
+                        )
                 else:
                     print(f"[OK] Datasource already exists (id={ds['id']})")
                     self._ensure_jsondata_database(ds["id"], pg_db, pg_pass)
@@ -135,7 +144,9 @@ class GrafanaProvisioner:
             print(f"[OK] Datasource created (id={ds_id})")
             return ds_id
         else:
-            print(f"[ERROR] Failed to create datasource: {resp.status_code} {resp.text}")
+            print(
+                f"[ERROR] Failed to create datasource: {resp.status_code} {resp.text}"
+            )
             return None
 
     def create_folder(self, title: str, uid: str) -> str:
@@ -171,7 +182,9 @@ class GrafanaProvisioner:
             print(f"[OK] Dashboard '{title}' imported -> {self.base_url}{url}")
             return True
         else:
-            print(f"[ERROR] Dashboard '{title}' import failed: {resp.status_code} {resp.text}")
+            print(
+                f"[ERROR] Dashboard '{title}' import failed: {resp.status_code} {resp.text}"
+            )
             return False
 
     def import_dashboards_from_dir(self, directory: str, folder_uid: str) -> int:
@@ -201,16 +214,26 @@ def main():
     parser.add_argument("--pg-db", default=DEFAULT_PG_DB)
     parser.add_argument("--pg-user", default=DEFAULT_PG_USER)
     parser.add_argument("--pg-pass", default=DEFAULT_PG_PASS)
-    parser.add_argument("--recreate-datasource", action="store_true", help="Delete and recreate datasource (fixes connection issues)")
+    parser.add_argument(
+        "--recreate-datasource",
+        action="store_true",
+        help="Delete and recreate datasource (fixes connection issues)",
+    )
     args = parser.parse_args()
 
-    provisioner = GrafanaProvisioner(args.grafana_url, args.grafana_user, args.grafana_pass)
+    provisioner = GrafanaProvisioner(
+        args.grafana_url, args.grafana_user, args.grafana_pass
+    )
 
     if not provisioner.check_connection():
         sys.exit(1)
 
     ds_id = provisioner.create_datasource(
-        args.pg_host, args.pg_port, args.pg_db, args.pg_user, args.pg_pass,
+        args.pg_host,
+        args.pg_port,
+        args.pg_db,
+        args.pg_user,
+        args.pg_pass,
         force_recreate=args.recreate_datasource,
     )
     if not ds_id:

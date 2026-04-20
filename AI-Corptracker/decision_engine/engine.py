@@ -4,6 +4,7 @@ Decision Engine — generates risk assessments and recommendations for strategic
 Aggregates data from all sources, runs the risk prediction model,
 and produces actionable insights for management.
 """
+
 import structlog
 from sqlalchemy.orm import Session
 
@@ -12,7 +13,11 @@ from shared.models.project import Project
 from shared.models.task import Task, TaskStatus
 from shared.models.document import Document, DocumentStatus
 from shared.models.risk import RiskAssessment
-from shared.models.recommendation import Recommendation, RecommendationPriority, RecommendationStatus
+from shared.models.recommendation import (
+    Recommendation,
+    RecommendationPriority,
+    RecommendationStatus,
+)
 from shared.models.event import Event
 from processor.ai.risk_predictor import RiskPredictor
 from processor.ai.text_analyzer import TextAnalyzer, SignalType
@@ -35,12 +40,18 @@ def analyze_goal(db: Session, goal: StrategicGoal) -> dict:
 
     documents = []
     if project_ids:
-        documents = db.query(Document).filter(Document.project_id.in_(project_ids)).all()
+        documents = (
+            db.query(Document).filter(Document.project_id.in_(project_ids)).all()
+        )
 
     total_tasks = len(tasks)
     blocked_tasks = sum(1 for t in tasks if t.status == TaskStatus.BLOCKED)
     done_tasks = sum(1 for t in tasks if t.status == TaskStatus.DONE)
-    pending_docs = sum(1 for d in documents if d.status in [DocumentStatus.DRAFT, DocumentStatus.REVIEW])
+    pending_docs = sum(
+        1
+        for d in documents
+        if d.status in [DocumentStatus.DRAFT, DocumentStatus.REVIEW]
+    )
     rejected_docs = sum(1 for d in documents if d.status == DocumentStatus.REJECTED)
 
     negative_signals = 0
@@ -58,7 +69,11 @@ def analyze_goal(db: Session, goal: StrategicGoal) -> dict:
             text_content = str(event.payload)
             signals = text_analyzer.analyze(text_content)
             for signal in signals:
-                if signal.signal_type in [SignalType.BLOCKER, SignalType.DELAY, SignalType.RISK]:
+                if signal.signal_type in [
+                    SignalType.BLOCKER,
+                    SignalType.DELAY,
+                    SignalType.RISK,
+                ]:
                     negative_signals += 1
                 elif signal.signal_type in [SignalType.PROGRESS, SignalType.POSITIVE]:
                     positive_signals += 1
@@ -110,7 +125,9 @@ def analyze_goal(db: Session, goal: StrategicGoal) -> dict:
             title=rec_text[:200],
             description=prediction.summary,
             action=rec_text,
-            priority=priority_map.get(prediction.risk_level, RecommendationPriority.MEDIUM),
+            priority=priority_map.get(
+                prediction.risk_level, RecommendationPriority.MEDIUM
+            ),
             status=RecommendationStatus.ACTIVE,
             category="risk_mitigation",
         )
@@ -136,7 +153,9 @@ def run_full_analysis(db: Session) -> list[dict]:
         try:
             result = analyze_goal(db, goal)
             results.append(result)
-            logger.info("Goal analyzed", goal=goal.title[:50], risk=result["risk_score"])
+            logger.info(
+                "Goal analyzed", goal=goal.title[:50], risk=result["risk_score"]
+            )
         except Exception as e:
             logger.error("Goal analysis failed", goal=goal.title[:50], error=str(e))
 

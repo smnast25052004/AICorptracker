@@ -27,7 +27,9 @@ class Recommendation(TimestampMixin, Base):
     title = Column(String(500), nullable=False)
     description = Column(Text)
     action = Column(Text)
-    priority = Column(SAEnum(RecommendationPriority), default=RecommendationPriority.MEDIUM)
+    priority = Column(
+        SAEnum(RecommendationPriority), default=RecommendationPriority.MEDIUM
+    )
     status = Column(SAEnum(RecommendationStatus), default=RecommendationStatus.ACTIVE)
     category = Column(String(100))
 

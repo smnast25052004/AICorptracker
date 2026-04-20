@@ -4,6 +4,7 @@ AI Text Analyzer — extracts signals from corporate text data.
 Detects blockers, delays, risks, progress updates, and sentiment
 from documents, comments, messages, and task descriptions.
 """
+
 import re
 from dataclasses import dataclass
 from enum import Enum
@@ -108,12 +109,16 @@ class TextAnalyzer:
 
             if matched_keywords:
                 confidence = min(0.95, 0.5 + 0.15 * len(matched_keywords))
-                signals.append(TextSignal(
-                    signal_type=signal_type,
-                    confidence=confidence,
-                    keywords=list(set(matched_keywords)),
-                    summary=self._generate_summary(signal_type, matched_keywords, text),
-                ))
+                signals.append(
+                    TextSignal(
+                        signal_type=signal_type,
+                        confidence=confidence,
+                        keywords=list(set(matched_keywords)),
+                        summary=self._generate_summary(
+                            signal_type, matched_keywords, text
+                        ),
+                    )
+                )
 
         return signals
 
@@ -125,11 +130,17 @@ class TextAnalyzer:
         negative_score = 0
         positive_score = 0
 
-        for pattern in SIGNAL_PATTERNS[SignalType.BLOCKER] + SIGNAL_PATTERNS[SignalType.DELAY] + SIGNAL_PATTERNS[SignalType.RISK]:
+        for pattern in (
+            SIGNAL_PATTERNS[SignalType.BLOCKER]
+            + SIGNAL_PATTERNS[SignalType.DELAY]
+            + SIGNAL_PATTERNS[SignalType.RISK]
+        ):
             if re.search(pattern, text_lower):
                 negative_score += 1
 
-        for pattern in SIGNAL_PATTERNS[SignalType.PROGRESS] + SIGNAL_PATTERNS[SignalType.POSITIVE]:
+        for pattern in (
+            SIGNAL_PATTERNS[SignalType.PROGRESS] + SIGNAL_PATTERNS[SignalType.POSITIVE]
+        ):
             if re.search(pattern, text_lower):
                 positive_score += 1
 
@@ -144,7 +155,9 @@ class TextAnalyzer:
             return "negative", 1 - ratio
         return "neutral", 0.5
 
-    def _generate_summary(self, signal_type: SignalType, keywords: list[str], original_text: str) -> str:
+    def _generate_summary(
+        self, signal_type: SignalType, keywords: list[str], original_text: str
+    ) -> str:
         type_labels = {
             SignalType.BLOCKER: "Обнаружен блокер",
             SignalType.DELAY: "Обнаружена задержка",

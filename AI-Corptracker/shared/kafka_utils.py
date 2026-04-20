@@ -16,21 +16,25 @@ TOPICS = {
 
 def create_producer() -> Producer:
     settings = get_settings()
-    return Producer({
-        "bootstrap.servers": settings.kafka_bootstrap_servers,
-        "client.id": "corptracker-producer",
-        "acks": "all",
-    })
+    return Producer(
+        {
+            "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "client.id": "corptracker-producer",
+            "acks": "all",
+        }
+    )
 
 
 def create_consumer(group_id: str, topics: list[str] | None = None) -> Consumer:
     settings = get_settings()
-    consumer = Consumer({
-        "bootstrap.servers": settings.kafka_bootstrap_servers,
-        "group.id": group_id,
-        "auto.offset.reset": "earliest",
-        "enable.auto.commit": True,
-    })
+    consumer = Consumer(
+        {
+            "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "group.id": group_id,
+            "auto.offset.reset": "earliest",
+            "enable.auto.commit": True,
+        }
+    )
     if topics:
         consumer.subscribe(topics)
     return consumer

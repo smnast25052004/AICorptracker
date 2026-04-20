@@ -3,6 +3,7 @@ CRM / ERP data source connector.
 
 Fetches customer-related events, deal updates, and pipeline changes.
 """
+
 import random
 from datetime import datetime, timedelta
 from typing import Generator
@@ -68,12 +69,14 @@ class CRMSource(BaseSource):
                     "stage": deal["stage"],
                     "value_usd": deal["value"],
                     "project_key": deal["project"],
-                    "next_action": random.choice([
-                        "Подготовить коммерческое предложение",
-                        "Согласовать условия с юристами",
-                        "Назначить техническую демонстрацию",
-                        "Ожидание подписи клиента",
-                    ]),
+                    "next_action": random.choice(
+                        [
+                            "Подготовить коммерческое предложение",
+                            "Согласовать условия с юристами",
+                            "Назначить техническую демонстрацию",
+                            "Ожидание подписи клиента",
+                        ]
+                    ),
                 },
             )
 

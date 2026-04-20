@@ -4,6 +4,7 @@ Jira data source connector.
 In production, connects to Jira REST API to fetch issues, sprints, and boards.
 Currently uses simulated data for demonstration.
 """
+
 import random
 from datetime import datetime, timedelta
 from typing import Generator
@@ -34,8 +35,12 @@ SIMULATED_TASKS = [
 ]
 
 ASSIGNEES = [
-    "Иванов А.С.", "Петрова М.В.", "Сидоров К.Н.",
-    "Козлова Е.А.", "Морозов Д.И.", "Волкова А.П.",
+    "Иванов А.С.",
+    "Петрова М.В.",
+    "Сидоров К.Н.",
+    "Козлова Е.А.",
+    "Морозов Д.И.",
+    "Волкова А.П.",
 ]
 
 
@@ -81,12 +86,14 @@ class JiraSource(BaseSource):
                     timestamp=datetime.now() - timedelta(days=random.randint(0, 5)),
                     payload={
                         "title": title,
-                        "blocker_reason": random.choice([
-                            "Ожидание согласования документа",
-                            "Зависимость от внешнего подрядчика",
-                            "Блокировка из-за смены приоритетов",
-                            "Ожидание ресурсов инфраструктуры",
-                        ]),
+                        "blocker_reason": random.choice(
+                            [
+                                "Ожидание согласования документа",
+                                "Зависимость от внешнего подрядчика",
+                                "Блокировка из-за смены приоритетов",
+                                "Ожидание ресурсов инфраструктуры",
+                            ]
+                        ),
                     },
                     task_title=title,
                     task_status="blocked",

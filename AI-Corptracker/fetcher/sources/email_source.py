@@ -3,6 +3,7 @@ Email / messaging data source connector.
 
 Monitors corporate communications for goal-related signals.
 """
+
 import random
 from datetime import datetime, timedelta
 from typing import Generator

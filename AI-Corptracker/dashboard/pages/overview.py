@@ -1,10 +1,16 @@
 """Dashboard Overview — main page for CEO."""
+
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 
-from dashboard.api_client import get_dashboard_summary, get_notifications, get_risks, trigger_analysis
+from dashboard.api_client import (
+    get_dashboard_summary,
+    get_notifications,
+    get_risks,
+    trigger_analysis,
+)
 
 col_action, _ = st.columns([1, 3])
 with col_action:
@@ -19,7 +25,9 @@ with col_action:
 summary = get_dashboard_summary()
 
 if not summary or not summary.get("total_goals"):
-    st.info("Данные отсутствуют. Запустите seed-скрипт для заполнения базы и нажмите «Запустить анализ».")
+    st.info(
+        "Данные отсутствуют. Запустите seed-скрипт для заполнения базы и нажмите «Запустить анализ»."
+    )
     st.code("docker compose exec api python -m seed.seed_data", language="bash")
     st.stop()
 
@@ -29,11 +37,20 @@ col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric("Всего целей", summary.get("total_goals", 0))
 with col2:
-    st.metric("В норме", summary.get("goals_on_track", 0), delta="✓", delta_color="normal")
+    st.metric(
+        "В норме", summary.get("goals_on_track", 0), delta="✓", delta_color="normal"
+    )
 with col3:
-    st.metric("Под угрозой", summary.get("goals_at_risk", 0), delta="!", delta_color="inverse")
+    st.metric(
+        "Под угрозой", summary.get("goals_at_risk", 0), delta="!", delta_color="inverse"
+    )
 with col4:
-    st.metric("Критические", summary.get("goals_critical", 0), delta="!!!", delta_color="inverse")
+    st.metric(
+        "Критические",
+        summary.get("goals_critical", 0),
+        delta="!!!",
+        delta_color="inverse",
+    )
 
 st.markdown("---")
 col5, col6 = st.columns(2)
@@ -52,7 +69,7 @@ with col5:
     for label, value, color in zip(
         ["В норме", "Под угрозой", "Критические"],
         [on_track, at_risk, critical],
-        ["#27ae60", "#f39c12", "#e74c3c"]
+        ["#27ae60", "#f39c12", "#e74c3c"],
     ):
         if value > 0:
             labels.append(label)
@@ -60,15 +77,19 @@ with col5:
             colors.append(color)
 
     if values:
-        fig = go.Figure(data=[go.Pie(
-            labels=labels,
-            values=values,
-            marker_colors=colors,
-            hole=0.5,
-            textinfo='percent',
-            textposition='auto',
-            textfont_size=14,
-        )])
+        fig = go.Figure(
+            data=[
+                go.Pie(
+                    labels=labels,
+                    values=values,
+                    marker_colors=colors,
+                    hole=0.5,
+                    textinfo="percent",
+                    textposition="auto",
+                    textfont_size=14,
+                )
+            ]
+        )
         fig.update_layout(
             height=350,
             margin=dict(t=20, b=20, l=20, r=20),
@@ -97,8 +118,18 @@ st.subheader("Распределение по уровням риска")
 risks = get_risks()
 if risks:
     risk_df = pd.DataFrame(risks)
-    level_colors = {"critical": "#e74c3c", "high": "#e67e22", "medium": "#f39c12", "low": "#27ae60"}
-    level_labels = {"critical": "Критический", "high": "Высокий", "medium": "Средний", "low": "Низкий"}
+    level_colors = {
+        "critical": "#e74c3c",
+        "high": "#e67e22",
+        "medium": "#f39c12",
+        "low": "#27ae60",
+    }
+    level_labels = {
+        "critical": "Критический",
+        "high": "Высокий",
+        "medium": "Средний",
+        "low": "Низкий",
+    }
 
     chart_col1, chart_col2 = st.columns(2)
 
@@ -107,7 +138,9 @@ if risks:
         risk_levels_fig = px.pie(
             names=[level_labels.get(level, level) for level in level_counts.index],
             values=level_counts.values,
-            color_discrete_sequence=[level_colors.get(level, "#95a5a6") for level in level_counts.index],
+            color_discrete_sequence=[
+                level_colors.get(level, "#95a5a6") for level in level_counts.index
+            ],
         )
         risk_levels_fig.update_layout(height=300, margin=dict(t=20, b=20))
         st.plotly_chart(risk_levels_fig, use_container_width=True)
@@ -116,7 +149,11 @@ if risks:
         st.caption("Факторы риска")
         if "blocked_tasks_count" in risk_df.columns:
             factor_data = {
-                "Фактор": ["Заблокированные задачи", "Задержки документов", "Отставание от плана"],
+                "Фактор": [
+                    "Заблокированные задачи",
+                    "Задержки документов",
+                    "Отставание от плана",
+                ],
                 "Среднее значение": [
                     risk_df["blocked_tasks_count"].mean(),
                     risk_df["document_delays"].mean(),
@@ -141,11 +178,13 @@ top_risks = summary.get("top_risks", [])
 if top_risks:
     rows_html = ""
     for risk in top_risks:
-        level_emoji = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}.get(risk["risk_level"], "⚪")
+        level_emoji = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}.get(
+            risk["risk_level"], "⚪"
+        )
         risk_score = f"{risk['risk_score']:.0%}"
         blocked = int(risk["blocked_tasks_count"])
         description = (risk.get("ai_summary") or "")[:120]
-        
+
         rows_html += f"""
         <tr>
             <td style="text-align: center;">{level_emoji}</td>
@@ -155,7 +194,7 @@ if top_risks:
             <td style="word-wrap: break-word; white-space: normal;">{description}</td>
         </tr>
         """
-    
+
     table_html = f"""
     <style>
         .risk-table {{
@@ -191,11 +230,12 @@ if top_risks:
         </tbody>
     </table>
     """
-    
+
     try:
         st.html(table_html)  # для Streamlit >= 1.36
     except AttributeError:
         from streamlit.components.v1 import html
+
         html(table_html, height=400, scrolling=True)
 else:
     st.info("Риски не обнаружены")

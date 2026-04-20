@@ -52,7 +52,12 @@ def get_goal(goal_id: str, db: Session = Depends(get_db)):
     if project_ids:
         tasks = db.query(Task).filter(Task.project_id.in_(project_ids)).all()
 
-    latest_risk = db.query(RiskAssessment).filter(RiskAssessment.goal_id == goal.id).order_by(RiskAssessment.created_at.desc()).first()
+    latest_risk = (
+        db.query(RiskAssessment)
+        .filter(RiskAssessment.goal_id == goal.id)
+        .order_by(RiskAssessment.created_at.desc())
+        .first()
+    )
     risk_based_reason = None
     if latest_risk:
         risk_based_reason = latest_risk.factors or latest_risk.ai_summary
@@ -72,7 +77,10 @@ def get_goal(goal_id: str, db: Session = Depends(get_db)):
 
     def _task_summary(task: Task) -> str | None:
         description = (task.description or "").strip()
-        generic_description = description in {f"Задача: {task.title}", f"Task: {task.title}"}
+        generic_description = description in {
+            f"Задача: {task.title}",
+            f"Task: {task.title}",
+        }
 
         if generic_description:
             description = ""
@@ -88,7 +96,9 @@ def get_goal(goal_id: str, db: Session = Depends(get_db)):
             return description
 
         task_status = task.status.value if task.status else "todo"
-        task_priority = priority_label.get(task.priority.value if task.priority else "medium", "средний")
+        task_priority = priority_label.get(
+            task.priority.value if task.priority else "medium", "средний"
+        )
         base_status = status_summary.get(task_status, "Статус уточняется")
         return f"{base_status}, приоритет: {task_priority}"
 

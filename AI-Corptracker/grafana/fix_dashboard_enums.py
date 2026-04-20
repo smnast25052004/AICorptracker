@@ -5,6 +5,7 @@ Fix Grafana dashboard rawSql: PostgreSQL enum labels are UPPERCASE in the DB
 
 risk_assessments.risk_level is VARCHAR with lowercase values — preserve CASE ra.risk_level ... blocks.
 """
+
 from __future__ import annotations
 
 import json
@@ -42,7 +43,11 @@ REPLACEMENTS: list[tuple[str, str]] = [
 
 def strip_risk_case(sql: str) -> tuple[str, str | None]:
     """Temporarily remove CASE ra.risk_level ... END so global enum fix does not break varchar labels."""
-    m = re.search(r"(CASE\s+ra\.risk_level\s+WHEN.+?END)(\s+AS\s+)", sql, flags=re.DOTALL | re.IGNORECASE)
+    m = re.search(
+        r"(CASE\s+ra\.risk_level\s+WHEN.+?END)(\s+AS\s+)",
+        sql,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
     if not m:
         return sql, None
     inner = m.group(1)
@@ -80,7 +85,9 @@ def main():
     for path in sorted(root.glob("*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
         walk(data)
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
         print(f"OK {path.name}")
 
 

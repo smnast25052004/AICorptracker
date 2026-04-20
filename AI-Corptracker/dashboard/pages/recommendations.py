@@ -1,7 +1,9 @@
 """Recommendations page — с фильтрами, сортировкой и отображением прогресса/дедлайна."""
+
 import streamlit as st
 import re
 from dashboard.api_client import get_recommendations, get_goal_detail
+
 
 # ---------- Функция для извлечения строк (для отображения) ----------
 def extract_progress_deadline(summary_text: str | None) -> tuple[str, str]:
@@ -13,6 +15,7 @@ def extract_progress_deadline(summary_text: str | None) -> tuple[str, str]:
     days_to_deadline = deadline_match.group(1) if deadline_match else "—"
     return progress, days_to_deadline
 
+
 # ---------- Функции для извлечения чисел (для сортировки/фильтров) ----------
 def extract_progress_num(description: str | None) -> int | None:
     if not description:
@@ -20,11 +23,13 @@ def extract_progress_num(description: str | None) -> int | None:
     match = re.search(r"Прогресс:\s*([0-9]{1,3})%?", description, re.IGNORECASE)
     return int(match.group(1)) if match else None
 
+
 def extract_days_num(description: str | None) -> int | None:
     if not description:
         return None
     match = re.search(r"дней до дедлайна:\s*([0-9]+)", description, re.IGNORECASE)
     return int(match.group(1)) if match else None
+
 
 def extract_risk_level(description: str | None) -> str | None:
     if not description:
@@ -40,6 +45,7 @@ def extract_risk_level(description: str | None) -> str | None:
             return "low"
     return None
 
+
 # ---------- Получение goal_id ----------
 goal_id = st.session_state.get("selected_goal_id")
 
@@ -52,7 +58,9 @@ if not goal_id:
 # ---------- Получение данных цели для карточки ----------
 goal_detail = get_goal_detail(goal_id)
 if not goal_detail or not goal_detail.get("goal"):
-    st.error("Не удалось загрузить данные цели. Вернитесь на страницу рисков и попробуйте снова.")
+    st.error(
+        "Не удалось загрузить данные цели. Вернитесь на страницу рисков и попробуйте снова."
+    )
     if st.button("Назад к целям"):
         st.switch_page("pages/risks.py")
     st.stop()
@@ -70,7 +78,12 @@ with col_back:
 
 # ---------- Карточка цели в expander (как на странице "Риски") ----------
 status_emojis = {"on_track": "🟢", "at_risk": "🟡", "critical": "🔴", "completed": "🔵"}
-status_labels = {"on_track": "В норме", "at_risk": "Под угрозой", "critical": "Критический", "completed": "Завершён"}
+status_labels = {
+    "on_track": "В норме",
+    "at_risk": "Под угрозой",
+    "critical": "Критический",
+    "completed": "Завершён",
+}
 
 emoji = status_emojis.get(goal.get("status", "on_track"), "⚪")
 risk_score = goal.get("risk_score", 0)
@@ -83,7 +96,9 @@ with st.expander(f"{emoji} {goal['title']} — Риск: {risk_score:.0%}", expa
         st.metric("Проектов", len(projects))
     with col3:
         # Количество задач можно взять из goal_detail, если оно там есть, иначе посчитать
-        tasks_count = goal_detail.get("tasks_count", sum(p.get("tasks_count", 0) for p in projects))
+        tasks_count = goal_detail.get(
+            "tasks_count", sum(p.get("tasks_count", 0) for p in projects)
+        )
         st.metric("Задач", tasks_count)
     with col4:
         priority = goal.get("priority", "medium").upper()
@@ -95,7 +110,9 @@ with st.expander(f"{emoji} {goal['title']} — Риск: {risk_score:.0%}", expa
     if projects:
         st.write("**Проекты:**")
         for p in projects:
-            st.write(f"  - {p['title']} ({status_labels.get(p.get('status', 'active'), p.get('status', 'active'))})")
+            st.write(
+                f"  - {p['title']} ({status_labels.get(p.get('status', 'active'), p.get('status', 'active'))})"
+            )
 
 st.markdown("---")
 
@@ -125,19 +142,28 @@ col_status, col_risk, col_sort = st.columns([2, 2, 2])
 
 with col_status:
     st.write("**Статус**")
-    status_options = {status: st.checkbox(status, key=f"status_{status}") for status in all_statuses}
+    status_options = {
+        status: st.checkbox(status, key=f"status_{status}") for status in all_statuses
+    }
     selected_statuses = [s for s, checked in status_options.items() if checked]
 
 with col_risk:
     st.write("**Уровень риска**")
-    risk_options = {risk: st.checkbox(risk_labels.get(risk, risk), key=f"risk_{risk}") for risk in all_risks}
+    risk_options = {
+        risk: st.checkbox(risk_labels.get(risk, risk), key=f"risk_{risk}")
+        for risk in all_risks
+    }
     selected_risks = [r for r, checked in risk_options.items() if checked]
 
 with col_sort:
     sort_by = st.selectbox(
         "Сортировка",
-        options=["Приоритет (сначала высокий)", "Прогресс (сначала низкий)", "Срок до дедлайна (сначала ближайший)"],
-        index=0
+        options=[
+            "Приоритет (сначала высокий)",
+            "Прогресс (сначала низкий)",
+            "Срок до дедлайна (сначала ближайший)",
+        ],
+        index=0,
     )
 
 # Применяем фильтры
@@ -151,9 +177,13 @@ if selected_risks:
 if sort_by == "Приоритет (сначала высокий)":
     filtered_recs.sort(key=lambda r: r["_priority_order"])
 elif sort_by == "Прогресс (сначала низкий)":
-    filtered_recs.sort(key=lambda r: r["_progress_num"] if r["_progress_num"] is not None else 101)
+    filtered_recs.sort(
+        key=lambda r: r["_progress_num"] if r["_progress_num"] is not None else 101
+    )
 elif sort_by == "Срок до дедлайна (сначала ближайший)":
-    filtered_recs.sort(key=lambda r: r["_days_num"] if r["_days_num"] is not None else 9999)
+    filtered_recs.sort(
+        key=lambda r: r["_days_num"] if r["_days_num"] is not None else 9999
+    )
 
 if not filtered_recs:
     st.info("Нет рекомендаций, соответствующих выбранным фильтрам.")

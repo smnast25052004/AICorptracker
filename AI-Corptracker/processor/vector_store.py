@@ -4,6 +4,7 @@ Vector Store — PGVector-based semantic search engine.
 Stores document/task embeddings and enables similarity search
 for the AI knowledge base.
 """
+
 import structlog
 from sqlalchemy import text
 from sqlalchemy.orm import Session

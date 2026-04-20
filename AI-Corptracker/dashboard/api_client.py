@@ -1,6 +1,8 @@
 """HTTP client for the CorpTracker API."""
+
 import httpx
 import os
+
 API_BASE = os.getenv("API_BASE_URL", "http://api:8000")
 
 _TIMEOUT = 15.0
@@ -48,10 +50,14 @@ def _delete(endpoint: str) -> dict:
         return {"error": str(e)}
 
 
-def _post_file(endpoint: str, file_bytes: bytes, filename: str, data: dict | None = None) -> dict:
+def _post_file(
+    endpoint: str, file_bytes: bytes, filename: str, data: dict | None = None
+) -> dict:
     try:
         files = {"file": (filename, file_bytes)}
-        resp = httpx.post(f"{API_BASE}{endpoint}", files=files, data=data or {}, timeout=30.0)
+        resp = httpx.post(
+            f"{API_BASE}{endpoint}", files=files, data=data or {}, timeout=30.0
+        )
         resp.raise_for_status()
         return resp.json()
     except httpx.HTTPStatusError as e:
@@ -61,6 +67,7 @@ def _post_file(endpoint: str, file_bytes: bytes, filename: str, data: dict | Non
 
 
 # --------------- Dashboard ---------------
+
 
 def get_dashboard_summary() -> dict:
     return _get("/api/dashboard/summary")
@@ -79,6 +86,7 @@ def semantic_search(query: str, limit: int = 5) -> dict:
 
 
 # --------------- Goals ---------------
+
 
 def get_goals() -> list:
     return _get("/api/goals/") or []
@@ -102,6 +110,7 @@ def delete_goal(goal_id: str) -> dict:
 
 # --------------- Projects ---------------
 
+
 def get_projects(goal_id: str | None = None) -> list:
     params = {"goal_id": goal_id} if goal_id else None
     return _get("/api/projects/", params=params) or []
@@ -120,6 +129,7 @@ def delete_project(project_id: str) -> dict:
 
 
 # --------------- Tasks ---------------
+
 
 def get_tasks(project_id: str | None = None) -> list:
     params = {"project_id": project_id} if project_id else None
@@ -140,6 +150,7 @@ def delete_task(task_id: str) -> dict:
 
 # --------------- Employees ---------------
 
+
 def get_employees() -> list:
     return _get("/api/employees/") or []
 
@@ -157,6 +168,7 @@ def delete_employee(employee_id: str) -> dict:
 
 
 # --------------- Documents ---------------
+
 
 def get_documents(project_id: str | None = None) -> list:
     params = {"project_id": project_id} if project_id else None
@@ -180,6 +192,7 @@ def delete_document(document_id: str) -> dict:
 
 
 # --------------- Risks ---------------
+
 
 def get_risks() -> list:
     return _get("/api/risks/") or []

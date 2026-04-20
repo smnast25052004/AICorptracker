@@ -7,6 +7,7 @@ Processes corporate events through the AI pipeline:
 3. Embedding generation (for vector search)
 4. Stores processed data in PostgreSQL
 """
+
 import json
 import time
 import structlog

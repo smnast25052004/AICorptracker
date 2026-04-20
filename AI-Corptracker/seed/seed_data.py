@@ -4,6 +4,7 @@ Seed script — populates the database from 'Примеры целей.xlsx'.
 Loads all goals, key results (as projects+tasks), and employees
 from the real corporate dataset.
 """
+
 import random
 from datetime import datetime
 from pathlib import Path
@@ -19,7 +20,6 @@ from shared.models.task import Task, TaskStatus, TaskPriority
 from shared.models.document import Document, DocumentStatus, DocumentType
 from processor.ai.embeddings import generate_embedding
 
-
 XLSX_PATH = Path(__file__).resolve().parent.parent / "Примеры целей.xlsx"
 
 
@@ -32,11 +32,35 @@ def _parse_xlsx():
     goals_map = {}
 
     for row in ws.iter_rows(min_row=2, values_only=True):
-        (emp_code, fio, post, dept, div, gid, gname, kr_id, kr_name,
-         gt_code, gt, period_end, period_type, period_year, period_code,
-         goal_weight, prozt, prozt_fact, result_plan, result_fact,
-         tracking_sys, tracking_link, description, summary, board,
-         key_product, entity) = row
+        (
+            emp_code,
+            fio,
+            post,
+            dept,
+            div,
+            gid,
+            gname,
+            kr_id,
+            kr_name,
+            gt_code,
+            gt,
+            period_end,
+            period_type,
+            period_year,
+            period_code,
+            goal_weight,
+            prozt,
+            prozt_fact,
+            result_plan,
+            result_fact,
+            tracking_sys,
+            tracking_link,
+            description,
+            summary,
+            board,
+            key_product,
+            entity,
+        ) = row
 
         if fio and fio.strip() and emp_code:
             fio_clean = fio.strip()
@@ -178,7 +202,11 @@ def seed():
 
             proj = Project(
                 title=gdata["name"],
-                status=ProjectStatus.COMPLETED if gdata["progress"] >= 100 else ProjectStatus.ACTIVE,
+                status=(
+                    ProjectStatus.COMPLETED
+                    if gdata["progress"] >= 100
+                    else ProjectStatus.ACTIVE
+                ),
                 progress=gdata["progress"],
                 lead=gdata["owner"] or "Руководство",
                 goal_id=goal.id,
@@ -193,7 +221,9 @@ def seed():
                 if owner_name and owner_name in emp_objects:
                     assignee = emp_objects[owner_name]
 
-                task_status = _kr_to_task_status(kr_data["result_plan"], kr_data["result_fact"])
+                task_status = _kr_to_task_status(
+                    kr_data["result_plan"], kr_data["result_fact"]
+                )
 
                 desc_parts = []
                 if kr_data["result_plan"] is not None:
@@ -202,12 +232,20 @@ def seed():
                     desc_parts.append(f"Факт: {kr_data['result_fact']}")
                 if kr_data["tracking"]:
                     desc_parts.append(f"Tracking: {kr_data['tracking']}")
-                description = "; ".join(desc_parts) if desc_parts else f"Key Result: {kr_data['name']}"
+                description = (
+                    "; ".join(desc_parts)
+                    if desc_parts
+                    else f"Key Result: {kr_data['name']}"
+                )
 
                 task = Task(
                     title=kr_data["name"],
                     status=task_status,
-                    priority=TaskPriority.HIGH if gdata["type"] == "КПЭ" else TaskPriority.MEDIUM,
+                    priority=(
+                        TaskPriority.HIGH
+                        if gdata["type"] == "КПЭ"
+                        else TaskPriority.MEDIUM
+                    ),
                     source_system="jira",
                     external_id=f"KR-{kr_id}",
                     story_points=random.choice([2, 3, 5, 8]),
@@ -222,26 +260,76 @@ def seed():
 
         print("Seeding documents...")
         doc_configs = [
-            ("Стратегия корпоративно-инвестиционного бизнеса", "report", "approved", "confluence",
-             "Стратегический документ описывает ключевые цели и направления развития КИБ."),
-            ("Методика расчёта KPI подразделений", "specification", "approved", "confluence",
-             "Методика описывает расчёт ключевых показателей эффективности для всех подразделений блока."),
-            ("Отчёт по AI-трансформации Q4 2025", "report", "review", "confluence",
-             "Результаты внедрения AI-агентов: обучение, аналитика, автоматизация рутинных операций."),
-            ("Регламент управления рисками КИБ", "specification", "approved", "edo",
-             "Регламент описывает процессы управления кредитными, рыночными и операционными рисками."),
-            ("Контракт на облачную инфраструктуру", "contract", "review", "edo",
-             "Договор на предоставление облачных вычислительных ресурсов для аналитических систем."),
-            ("ТЗ на инвестиционный портал", "specification", "approved", "confluence",
-             "Техническое задание на разработку портала анализа данных с AI-функциями."),
-            ("Отчёт по удовлетворённости клиентов CSI", "report", "approved", "confluence",
-             "Результаты опроса клиентов по качеству обслуживания: РКО, депозиты, бизнес-карты."),
-            ("Аналитика международных рынков", "report", "review", "confluence",
-             "Исследование потенциала международных расчётов и возможностей на рынках Индии."),
-            ("Политика информационной безопасности", "specification", "approved", "edo",
-             "Политика кибербезопасности: стандарты, контроль доступа, защита данных."),
-            ("SLA информационных систем", "contract", "approved", "edo",
-             "Соглашение об уровне обслуживания: доступность 99%, время отклика, надёжность транзакций."),
+            (
+                "Стратегия корпоративно-инвестиционного бизнеса",
+                "report",
+                "approved",
+                "confluence",
+                "Стратегический документ описывает ключевые цели и направления развития КИБ.",
+            ),
+            (
+                "Методика расчёта KPI подразделений",
+                "specification",
+                "approved",
+                "confluence",
+                "Методика описывает расчёт ключевых показателей эффективности для всех подразделений блока.",
+            ),
+            (
+                "Отчёт по AI-трансформации Q4 2025",
+                "report",
+                "review",
+                "confluence",
+                "Результаты внедрения AI-агентов: обучение, аналитика, автоматизация рутинных операций.",
+            ),
+            (
+                "Регламент управления рисками КИБ",
+                "specification",
+                "approved",
+                "edo",
+                "Регламент описывает процессы управления кредитными, рыночными и операционными рисками.",
+            ),
+            (
+                "Контракт на облачную инфраструктуру",
+                "contract",
+                "review",
+                "edo",
+                "Договор на предоставление облачных вычислительных ресурсов для аналитических систем.",
+            ),
+            (
+                "ТЗ на инвестиционный портал",
+                "specification",
+                "approved",
+                "confluence",
+                "Техническое задание на разработку портала анализа данных с AI-функциями.",
+            ),
+            (
+                "Отчёт по удовлетворённости клиентов CSI",
+                "report",
+                "approved",
+                "confluence",
+                "Результаты опроса клиентов по качеству обслуживания: РКО, депозиты, бизнес-карты.",
+            ),
+            (
+                "Аналитика международных рынков",
+                "report",
+                "review",
+                "confluence",
+                "Исследование потенциала международных расчётов и возможностей на рынках Индии.",
+            ),
+            (
+                "Политика информационной безопасности",
+                "specification",
+                "approved",
+                "edo",
+                "Политика кибербезопасности: стандарты, контроль доступа, защита данных.",
+            ),
+            (
+                "SLA информационных систем",
+                "contract",
+                "approved",
+                "edo",
+                "Соглашение об уровне обслуживания: доступность 99%, время отклика, надёжность транзакций.",
+            ),
         ]
 
         emp_list = list(emp_objects.values())

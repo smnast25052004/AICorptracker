@@ -3,6 +3,7 @@ Confluence / EDO (Electronic Document Operator) data source connector.
 
 Fetches documents, their statuses, and approval events.
 """
+
 import random
 from datetime import datetime, timedelta
 from typing import Generator
@@ -26,8 +27,12 @@ SIMULATED_DOCUMENTS = [
 ]
 
 AUTHORS = [
-    "Иванов А.С.", "Петрова М.В.", "Сидоров К.Н.",
-    "Козлова Е.А.", "Морозов Д.И.", "Волкова А.П.",
+    "Иванов А.С.",
+    "Петрова М.В.",
+    "Сидоров К.Н.",
+    "Козлова Е.А.",
+    "Морозов Д.И.",
+    "Волкова А.П.",
 ]
 
 

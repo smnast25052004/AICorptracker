@@ -3,8 +3,8 @@ from typing import Optional
 from datetime import datetime
 from uuid import UUID
 
-
 # --------------- Response schemas ---------------
+
 
 class GoalResponse(BaseModel):
     id: UUID
@@ -125,6 +125,7 @@ class DashboardSummary(BaseModel):
 
 
 # --------------- Create / Update schemas ---------------
+
 
 class GoalCreate(BaseModel):
     title: str

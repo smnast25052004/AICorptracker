@@ -81,7 +81,9 @@ async def upload_document(
 
 
 @router.put("/{document_id}", response_model=DocumentResponse)
-def update_document(document_id: str, data: DocumentUpdate, db: Session = Depends(get_db)):
+def update_document(
+    document_id: str, data: DocumentUpdate, db: Session = Depends(get_db)
+):
     doc = db.query(Document).filter(Document.id == document_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")

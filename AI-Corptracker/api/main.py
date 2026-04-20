@@ -1,6 +1,7 @@
 """
 CorpTracker API — REST API for the strategic monitoring system.
 """
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 

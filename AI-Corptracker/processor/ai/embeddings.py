@@ -4,6 +4,7 @@ Embeddings Engine — generates vector embeddings for semantic search.
 Uses sentence-transformers for multilingual embedding generation
 to power the vector knowledge base.
 """
+
 import numpy as np
 import structlog
 from typing import Optional
@@ -19,10 +20,13 @@ def get_embedding_model():
     if _model is None:
         try:
             from sentence_transformers import SentenceTransformer
+
             _model = SentenceTransformer("all-MiniLM-L6-v2")
             logger.info("Embedding model loaded", model="all-MiniLM-L6-v2")
         except Exception as e:
-            logger.warning("Failed to load embedding model, using random vectors", error=str(e))
+            logger.warning(
+                "Failed to load embedding model, using random vectors", error=str(e)
+            )
             _model = "fallback"
     return _model
 
