@@ -1,0 +1,534 @@
+{
+  "uid": "corptracker-risk-analysis",
+  "title": "Risk Analysis — Анализ рисков",
+  "description": "Детальный анализ рисков по стратегическим целям с AI-объяснениями",
+  "tags": [
+    "corptracker",
+    "risks",
+    "ai"
+  ],
+  "timezone": "browser",
+  "refresh": "1m",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "",
+      "type": "text",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# ⚠️ Анализ рисков\nАвтоматическая оценка рисков AI-системой на основе данных из Jira, Confluence, CRM и корпоративной почты"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Риск по целям (барчарт)",
+      "type": "barchart",
+      "gridPos": {
+        "h": 10,
+        "w": 14,
+        "x": 0,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT g.title AS \"Цель\", ROUND(g.risk_score * 100) AS \"Риск (%)\" FROM strategic_goals g WHERE g.risk_score > 0 ORDER BY g.risk_score DESC;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#27ae60",
+                "value": null
+              },
+              {
+                "color": "#f39c12",
+                "value": 30
+              },
+              {
+                "color": "#e67e22",
+                "value": 55
+              },
+              {
+                "color": "#e74c3c",
+                "value": 75
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "id": 3,
+      "title": "Распределение уровней риска",
+      "type": "piechart",
+      "gridPos": {
+        "h": 10,
+        "w": 10,
+        "x": 14,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT CASE ra.risk_level WHEN 'critical' THEN 'Критический' WHEN 'high' THEN 'Высокий' WHEN 'medium' THEN 'Средний' WHEN 'low' THEN 'Низкий' ELSE ra.risk_level END AS \"level\", COUNT(*) AS \"count\" FROM risk_assessments ra WHERE ra.id IN (SELECT DISTINCT ON (goal_id) id FROM risk_assessments ORDER BY goal_id, created_at DESC) GROUP BY ra.risk_level;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Критический"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#e74c3c",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Высокий"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#e67e22",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Средний"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#f39c12",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Низкий"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#27ae60",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Факторы риска по целям",
+      "type": "table",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT g.title AS \"Цель\", CASE ra.risk_level WHEN 'critical' THEN '🔴 Критический' WHEN 'high' THEN '🟠 Высокий' WHEN 'medium' THEN '🟡 Средний' ELSE '🟢 Низкий' END AS \"Уровень\", ROUND(ra.risk_score * 100) || '%' AS \"Риск\", COALESCE(ra.blocked_tasks_count, 0) AS \"Блокеров\", ROUND(COALESCE(ra.overdue_tasks_ratio, 0) * 100) || '%' AS \"Отставание\", COALESCE(ra.document_delays, 0) AS \"Задержки док.\", ra.ai_summary AS \"AI-анализ\" FROM risk_assessments ra JOIN strategic_goals g ON ra.goal_id = g.id WHERE ra.id IN (SELECT DISTINCT ON (goal_id) id FROM risk_assessments ORDER BY goal_id, created_at DESC) ORDER BY ra.risk_score DESC;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "md"
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Цель"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 250
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "AI-анализ"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 450
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "title": "Заблокированные задачи (детали)",
+      "type": "table",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT t.title AS \"Задача\", CASE t.priority WHEN 'CRITICAL' THEN '🔴 Критический' WHEN 'HIGH' THEN '🟠 Высокий' WHEN 'MEDIUM' THEN '🟡 Средний' ELSE '🟢 Низкий' END AS \"Приоритет\", p.title AS \"Проект\", g.title AS \"Цель\", t.description AS \"Причина блокировки\", e.full_name AS \"Исполнитель\" FROM tasks t JOIN projects p ON t.project_id = p.id JOIN strategic_goals g ON p.goal_id = g.id LEFT JOIN employees e ON t.assignee_id = e.id WHERE t.status = 'BLOCKED' ORDER BY CASE t.priority WHEN 'CRITICAL' THEN 0 WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 ELSE 3 END;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Задача"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 250
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "title": "Документы с задержками",
+      "type": "table",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT d.title AS \"Документ\", CASE d.status WHEN 'DRAFT' THEN '📝 Черновик' WHEN 'REVIEW' THEN '🔍 На согласовании' WHEN 'REJECTED' THEN '❌ Отклонён' WHEN 'APPROVED' THEN '✅ Согласован' ELSE d.status::text END AS \"Статус\", d.doc_type AS \"Тип\", d.author AS \"Автор\", d.source_system AS \"Источник\", p.title AS \"Проект\" FROM documents d LEFT JOIN projects p ON d.project_id = p.id WHERE d.status IN ('DRAFT', 'REVIEW', 'REJECTED') ORDER BY CASE d.status WHEN 'REJECTED' THEN 0 WHEN 'REVIEW' THEN 1 WHEN 'DRAFT' THEN 2 ELSE 3 END;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Документ"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "title": "Статистика задач по статусам",
+      "type": "piechart",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT CASE status WHEN 'TODO' THEN 'К выполнению' WHEN 'IN_PROGRESS' THEN 'В работе' WHEN 'IN_REVIEW' THEN 'На ревью' WHEN 'DONE' THEN 'Выполнено' WHEN 'BLOCKED' THEN 'Заблокировано' ELSE status::text END AS \"label\", COUNT(*) AS \"value\" FROM tasks GROUP BY status;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Выполнено"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#27ae60",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "В работе"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#3498db",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Заблокировано"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#e74c3c",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "К выполнению"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#95a5a6",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "На ревью"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#9b59b6",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Статистика документов по статусам",
+      "type": "piechart",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 30
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT CASE status WHEN 'DRAFT' THEN 'Черновик' WHEN 'REVIEW' THEN 'На согласовании' WHEN 'APPROVED' THEN 'Согласован' WHEN 'REJECTED' THEN 'Отклонён' ELSE status::text END AS \"label\", COUNT(*) AS \"value\" FROM documents GROUP BY status;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Согласован"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#27ae60",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "На согласовании"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#f39c12",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Отклонён"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#e74c3c",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Черновик"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#95a5a6",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

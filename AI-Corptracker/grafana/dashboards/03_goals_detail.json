@@ -1,0 +1,421 @@
+{
+  "uid": "corptracker-goals-detail",
+  "title": "Goals Detail — Детали целей и проектов",
+  "description": "Подробный вид стратегических целей: проекты, задачи, исполнители, прогресс",
+  "tags": [
+    "corptracker",
+    "goals",
+    "projects"
+  ],
+  "timezone": "browser",
+  "refresh": "1m",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "goal",
+        "type": "query",
+        "label": "Стратегическая цель",
+        "datasource": {
+          "type": "postgres",
+          "uid": "corptracker-pg"
+        },
+        "query": "SELECT title AS __text, id::text AS __value FROM strategic_goals ORDER BY risk_score DESC;",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "",
+      "type": "text",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# 🎯 Детальный мониторинг целей и проектов\nВыберите цель в выпадающем списке для фильтрации"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Прогресс по проектам",
+      "type": "bargauge",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT p.title AS \"Проект\", ROUND(p.progress) AS \"Прогресс\" FROM projects p JOIN strategic_goals g ON p.goal_id = g.id WHERE g.id::text IN (${goal:sqlstring}) ORDER BY p.progress DESC;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#e74c3c",
+                "value": null
+              },
+              {
+                "color": "#f39c12",
+                "value": 30
+              },
+              {
+                "color": "#27ae60",
+                "value": 70
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "minVizWidth": 8,
+        "minVizHeight": 16
+      }
+    },
+    {
+      "id": 3,
+      "title": "Задачи по статусам и проектам",
+      "type": "barchart",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT p.title AS \"Проект\", COUNT(*) FILTER (WHERE t.status = 'DONE') AS \"Выполнено\", COUNT(*) FILTER (WHERE t.status = 'IN_PROGRESS') AS \"В работе\", COUNT(*) FILTER (WHERE t.status = 'IN_REVIEW') AS \"На ревью\", COUNT(*) FILTER (WHERE t.status = 'TODO') AS \"К выполнению\", COUNT(*) FILTER (WHERE t.status = 'BLOCKED') AS \"Заблокировано\" FROM tasks t JOIN projects p ON t.project_id = p.id JOIN strategic_goals g ON p.goal_id = g.id WHERE g.id::text IN (${goal:sqlstring}) GROUP BY p.title ORDER BY p.title;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Выполнено"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#27ae60",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "В работе"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#3498db",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "На ревью"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#9b59b6",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "К выполнению"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#95a5a6",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Заблокировано"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#e74c3c",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "stacking": "normal",
+        "showValue": "auto",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "id": 4,
+      "title": "Все задачи (детальный список)",
+      "type": "table",
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT CASE t.status WHEN 'DONE' THEN '✅' WHEN 'IN_PROGRESS' THEN '🔄' WHEN 'IN_REVIEW' THEN '🔍' WHEN 'BLOCKED' THEN '🚫' ELSE '📋' END AS \" \", t.title AS \"Задача\", CASE t.priority WHEN 'CRITICAL' THEN '🔴 Критический' WHEN 'HIGH' THEN '🟠 Высокий' WHEN 'MEDIUM' THEN '🟡 Средний' ELSE '🟢 Низкий' END AS \"Приоритет\", CASE t.status WHEN 'DONE' THEN 'Выполнено' WHEN 'IN_PROGRESS' THEN 'В работе' WHEN 'IN_REVIEW' THEN 'На ревью' WHEN 'BLOCKED' THEN 'Заблокировано' ELSE 'К выполнению' END AS \"Статус\", p.title AS \"Проект\", g.title AS \"Цель\", e.full_name AS \"Исполнитель\", t.story_points AS \"SP\" FROM tasks t JOIN projects p ON t.project_id = p.id JOIN strategic_goals g ON p.goal_id = g.id LEFT JOIN employees e ON t.assignee_id = e.id WHERE g.id::text IN (${goal:sqlstring}) ORDER BY CASE t.priority WHEN 'CRITICAL' THEN 0 WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 ELSE 3 END, CASE t.status WHEN 'BLOCKED' THEN 0 WHEN 'IN_PROGRESS' THEN 1 WHEN 'IN_REVIEW' THEN 2 WHEN 'TODO' THEN 3 ELSE 4 END;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": [
+            "count"
+          ],
+          "countRows": true
+        }
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": " "
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Задача"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Цель"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SP"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 50
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "title": "Нагрузка на исполнителей",
+      "type": "barchart",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT e.full_name AS \"Сотрудник\", COUNT(*) FILTER (WHERE t.status != 'DONE') AS \"Активных задач\", COUNT(*) FILTER (WHERE t.status = 'BLOCKED') AS \"Заблокировано\", SUM(t.story_points) FILTER (WHERE t.status != 'DONE') AS \"Story Points\" FROM tasks t JOIN employees e ON t.assignee_id = e.id JOIN projects p ON t.project_id = p.id JOIN strategic_goals g ON p.goal_id = g.id WHERE g.id::text IN (${goal:sqlstring}) GROUP BY e.full_name ORDER BY COUNT(*) FILTER (WHERE t.status != 'DONE') DESC;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Заблокировано"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#e74c3c",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Активных задач"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#3498db",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "stacking": "none",
+        "showValue": "always"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Документы по проектам",
+      "type": "table",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT CASE d.status WHEN 'APPROVED' THEN '✅' WHEN 'REVIEW' THEN '🔍' WHEN 'REJECTED' THEN '❌' ELSE '📝' END AS \" \", d.title AS \"Документ\", CASE d.doc_type WHEN 'SPECIFICATION' THEN 'ТЗ' WHEN 'CONTRACT' THEN 'Контракт' WHEN 'REPORT' THEN 'Отчёт' WHEN 'CONFLUENCE_PAGE' THEN 'Confluence' ELSE d.doc_type::text END AS \"Тип\", CASE d.status WHEN 'APPROVED' THEN 'Согласован' WHEN 'REVIEW' THEN 'На согласовании' WHEN 'REJECTED' THEN 'Отклонён' ELSE 'Черновик' END AS \"Статус\", d.author AS \"Автор\", p.title AS \"Проект\" FROM documents d LEFT JOIN projects p ON d.project_id = p.id LEFT JOIN strategic_goals g ON p.goal_id = g.id WHERE g.id::text IN (${goal:sqlstring}) ORDER BY CASE d.status WHEN 'REJECTED' THEN 0 WHEN 'REVIEW' THEN 1 WHEN 'DRAFT' THEN 2 ELSE 3 END;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": " "
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Документ"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

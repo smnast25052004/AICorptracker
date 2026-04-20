@@ -1,0 +1,734 @@
+{
+  "uid": "corptracker-ceo-overview",
+  "title": "CEO Overview — Стратегический мониторинг",
+  "description": "Главный дашборд для руководства: здоровье целей, ключевые метрики, уведомления",
+  "tags": [
+    "corptracker",
+    "ceo",
+    "strategic"
+  ],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "",
+      "type": "text",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# 🎯 AI CorpTracker — Стратегический мониторинг\n**Интеллектуальная система анализа корпоративных целей в реальном времени**"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Всего целей",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Всего целей\" FROM strategic_goals;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#6c63ff",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      }
+    },
+    {
+      "id": 3,
+      "title": "В норме 🟢",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 4,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"В норме\" FROM strategic_goals WHERE status = 'ON_TRACK';",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#27ae60",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Под угрозой 🟡",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 9,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Под угрозой\" FROM strategic_goals WHERE status = 'AT_RISK';",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#f39c12",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Критические 🔴",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 14,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Критические\" FROM strategic_goals WHERE status = 'CRITICAL';",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#e74c3c",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Средний риск",
+      "type": "gauge",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 2
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT ROUND(AVG(risk_score) * 100) AS \"Средний риск (%)\" FROM strategic_goals WHERE risk_score > 0;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#27ae60",
+                "value": null
+              },
+              {
+                "color": "#f39c12",
+                "value": 30
+              },
+              {
+                "color": "#e67e22",
+                "value": 55
+              },
+              {
+                "color": "#e74c3c",
+                "value": 75
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Здоровье стратегических целей",
+      "type": "table",
+      "gridPos": {
+        "h": 10,
+        "w": 14,
+        "x": 0,
+        "y": 6
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT g.title AS \"Цель\", CASE g.status WHEN 'ON_TRACK' THEN '🟢 В норме' WHEN 'AT_RISK' THEN '🟡 Под угрозой' WHEN 'CRITICAL' THEN '🔴 Критический' WHEN 'COMPLETED' THEN '🔵 Завершён' ELSE g.status::text END AS \"Статус\", ROUND(g.risk_score * 100) || '%' AS \"Риск\", ROUND(g.progress) || '%' AS \"Прогресс\", g.priority::text AS \"Приоритет\", g.owner AS \"Владелец\", (SELECT COUNT(*) FROM projects p WHERE p.goal_id = g.id) AS \"Проектов\", (SELECT COUNT(*) FROM tasks t JOIN projects p ON t.project_id = p.id WHERE p.goal_id = g.id) AS \"Задач\", (SELECT COUNT(*) FROM tasks t JOIN projects p ON t.project_id = p.id WHERE p.goal_id = g.id AND t.status = 'BLOCKED') AS \"Блокеров\" FROM strategic_goals g ORDER BY g.risk_score DESC;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Цель"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 280
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": true
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Распределение статусов целей",
+      "type": "piechart",
+      "gridPos": {
+        "h": 10,
+        "w": 10,
+        "x": 14,
+        "y": 6
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT CASE status WHEN 'ON_TRACK' THEN 'В норме' WHEN 'AT_RISK' THEN 'Под угрозой' WHEN 'CRITICAL' THEN 'Критический' WHEN 'COMPLETED' THEN 'Завершён' ELSE status::text END AS \"label\", COUNT(*) AS \"value\" FROM strategic_goals GROUP BY status;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "В норме"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#27ae60",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Под угрозой"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#f39c12",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Критический"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#e74c3c",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Задачи заблокировано",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 16
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Заблокировано\" FROM tasks WHERE status = 'BLOCKED';",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#27ae60",
+                "value": null
+              },
+              {
+                "color": "#f39c12",
+                "value": 3
+              },
+              {
+                "color": "#e74c3c",
+                "value": 5
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Всего задач",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 16
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Всего задач\" FROM tasks;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3498db",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background"
+      }
+    },
+    {
+      "id": 11,
+      "title": "Задач выполнено",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 16
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Выполнено\" FROM tasks WHERE status = 'DONE';",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#27ae60",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background"
+      }
+    },
+    {
+      "id": 12,
+      "title": "Проектов",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 16
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Проектов\" FROM projects;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#9b59b6",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background"
+      }
+    },
+    {
+      "id": 13,
+      "title": "Документов",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 16
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Документов\" FROM documents;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#1abc9c",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background"
+      }
+    },
+    {
+      "id": 14,
+      "title": "Сотрудников",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 16
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS \"Сотрудников\" FROM employees WHERE is_active = true;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2c3e50",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background"
+      }
+    },
+    {
+      "id": 15,
+      "title": "🔔 Последние AI-рекомендации",
+      "type": "table",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "corptracker-pg"
+      },
+      "targets": [
+        {
+          "rawSql": "SELECT CASE r.priority WHEN 'URGENT' THEN '🔴 СРОЧНО' WHEN 'HIGH' THEN '🟠 Высокий' WHEN 'MEDIUM' THEN '🟡 Средний' ELSE '🟢 Низкий' END AS \"Приоритет\", r.title AS \"Рекомендация\", g.title AS \"Цель\", r.action AS \"Действие\", r.status AS \"Статус\", TO_CHAR(r.created_at, 'DD.MM.YYYY HH24:MI') AS \"Дата\" FROM recommendations r JOIN strategic_goals g ON r.goal_id = g.id WHERE r.status = 'ACTIVE' ORDER BY CASE r.priority WHEN 'URGENT' THEN 0 WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 ELSE 3 END, r.created_at DESC LIMIT 15;",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Рекомендация"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 350
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Цель"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 250
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

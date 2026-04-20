@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+.env
+.git
+.gitignore
+*.md
+*.docx
+*.xlsx
+!Примеры целей.xlsx
+.venv
+venv
