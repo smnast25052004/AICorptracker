@@ -1,14 +1,3 @@
-"""
-Risk Predictor — evaluates risk levels for strategic goals.
-
-Uses a weighted scoring model based on multiple risk factors:
-- Blocked tasks ratio
-- Overdue tasks ratio
-- Document approval delays
-- Negative signals from communications
-- Dependencies and external factors
-"""
-
 from dataclasses import dataclass, field
 
 
