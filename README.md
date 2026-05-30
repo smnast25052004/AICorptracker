@@ -35,20 +35,26 @@ AI CorpTracker — это прототип платформы для топ-ме
 ---
 ## Запуск проекта
 1. Клонируйте репозиторий
+
 git clone https://github.com/smnast25052004/AICorptracker.git
 cd AICorptracker
 
 3. Настройте окружение
+
 cp .env.example .env
 
 4. Запустите все сервисы через Docker Compose
+
 docker-compose up -d --build
 
 5. Загрузите демонстрационные данные
+
 docker-compose exec api python -m seed.seed_data
 
 6. Запустите анализ
+
 curl -X POST http://localhost:8000/api/analysis/run
 
 7. Настройте дашборды Grafana
+
 python3 grafana/provision.py
